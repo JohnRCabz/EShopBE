@@ -24,15 +24,11 @@ class CartService
         $cartItem = Cart::where('item_id', $validatedData['item_id'])->first();
 
         if ($cartItem) {
-            // Update the quantity of the existing cart item
             $cartItem->quantity += $validatedData['quantity'];
             $cartItem->save();
         } else {
-            // Create a new cart item
             $cartItem = Cart::create($validatedData);
         }
-
-        // Deduct the quantity from the item
         $item->quantity -= $validatedData['quantity'];
         $item->save();
 
@@ -66,7 +62,14 @@ class CartService
 
     public function checkout()
     {
-        // Implement checkout logic here
+        $cartItems = Cart::all();
+
+        if ($cartItems->isEmpty()) {
+            return response()->json(['message' => 'Cart is empty'], 400);
+        }
+        foreach ($cartItems as $cartItem) {
+            $cartItem->delete();
+        }
         return response()->json(['message' => 'Checkout successful'], 200);
     }
 }
